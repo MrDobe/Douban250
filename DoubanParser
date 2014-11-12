@@ -1,0 +1,26 @@
+package com.wang.douban;
+
+import java.util.ArrayList;
+
+public class DoubanParser {
+
+	public static void main(String[] args){
+		Douban250Parser();
+	}
+/**
+ * 爬取豆瓣250页面电影并下载图片	
+ */
+	public static void Douban250Parser(){
+		String url = "http://movie.douban.com/top250";
+		String source = ParserApi.getHtmlContent(url, "utf-8");
+		ArrayList<String> titles = ParserApi.findall(source, "<img alt=\"(.*?)\" src=\".*?\" class=\"\">");
+		ArrayList<String> imgs = ParserApi.findall(source, "<img alt=\".*?\" src=\"(.*?)\" class=\"\">");
+		ArrayList<String> rating = ParserApi.findall(source, "<span class=\"rating.*?\"><em>(.*?)</em></span>");
+		for(int i=0;i<titles.size();i++){
+			System.out.println(titles.get(i));
+			System.out.println(imgs.get(i));
+			System.out.println(rating.get(i));
+		}
+		ParserApi.SaveFile(imgs, titles,"D:/douban250");		
+	}
+}
