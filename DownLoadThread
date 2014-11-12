@@ -1,0 +1,16 @@
+package com.wang.douban;
+
+public class DownLoadThread extends Thread{
+
+	private String fileUrl;
+	private String fileDes;
+	
+	public DownLoadThread(String fileUrl,String fileDes){
+		this.fileUrl = fileUrl;
+		this.fileDes = fileDes;
+	}
+	
+	public void run(){
+		ParserApi.saveUrlFile(fileUrl, fileDes);
+	}
+}
