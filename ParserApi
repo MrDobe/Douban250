@@ -51,7 +51,12 @@ public class ParserApi {
         }  
         return content;  
     } 
-	
+/**
+ * 通过正则匹配到需要的信息	
+ * @param source
+ * @param pattern
+ * @return
+ */
 	public static ArrayList<String> findall(String source,String pattern){
 		ArrayList<String> content = new ArrayList<String>();
 		try{
@@ -66,27 +71,22 @@ public class ParserApi {
 		return content;
 	}
 /**
- * 保存图片
- * @param urls
- * @param names
+ * 创建文件夹	
+ * @param file
  */
-	public static void SaveFile(ArrayList<String> urls,ArrayList<String> names,String file){
-		if(urls.size()!=names.size()){
-			System.out.println("文件地址和文件名长度不一致");
+	public static void CreateDirectory(String file){
+		File myfile = new File(file);
+		if(myfile.exists()){
+			System.out.println(file+" 文件夹已存在");
 			return;
 		}
-		File myfile = new File(file);
 		myfile.mkdirs();  //创建文件夹
-		for(int i=0;i<urls.size();i++){
-			try{
-				saveUrlFile(urls.get(i),file+"/"+names.get(i)+".jpg");
-			}catch(Exception e){
-				e.printStackTrace();
-				System.out.println(names.get(i)+"保存失败");
-			}
-		}
 	}
-	
+/**
+ * 保存图片  	
+ * @param fileUrl  图片链接
+ * @param fileDes  图片存名
+ */
 	public static void saveUrlFile(String fileUrl,String fileDes) {  
 		try{
 			File toFile = new File(fileDes);    
