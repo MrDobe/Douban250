@@ -1,26 +1,124 @@
 package com.wang.douban;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-public class DoubanParser {
-
-	public static void main(String[] args){
-		Douban250Parser();
+public class ParserApi {
+/**
+ * 获取网页源代码
+ * @param surl  网页链接
+ * @param encode  
+ * @return
+ */
+	public static String getHtmlContent(String surl, String encode) {  
+		String content = null;
+        StringBuffer contentBuffer = new StringBuffer();  
+        URL url = null;        
+        HttpURLConnection con = null;  
+        try {  
+        	url = new URL(surl);
+            con = (HttpURLConnection) url.openConnection();  
+            con.setRequestProperty("User-Agent", "Mozilla/4.0 (compatible; MSIE 5.0; Windows NT; DigExt)");// IE代理下载  
+            con.setConnectTimeout(20000);  
+            con.setReadTimeout(20000);  
+            
+            InputStream inStr = con.getInputStream();  
+            InputStreamReader istreamReader = new InputStreamReader(inStr, encode);  
+            BufferedReader buffStr = new BufferedReader(istreamReader);  
+  
+            String str = null;  
+            while ((str = buffStr.readLine()) != null)  
+                contentBuffer.append(str);  
+            inStr.close(); 
+            
+            content = contentBuffer.toString();
+        } catch (Exception e) {  
+            e.printStackTrace();  
+            contentBuffer = null;  
+            content = null;
+            System.out.println("error: " + url.toString());  
+        } finally {  
+            con.disconnect();  
+        }  
+        return content;  
+    } 
+/**
+ * 通过正则匹配到需要的信息	
+ * @param source
+ * @param pattern
+ * @return
+ */
+	public static ArrayList<String> findall(String source,String pattern){
+		ArrayList<String> content = new ArrayList<String>();
+		try{
+			Pattern p2 = Pattern.compile(pattern);
+	        Matcher m2 = p2.matcher(source);
+	        while(m2.find()){
+	        	content.add(m2.group(1));
+	        }		
+		}catch(Exception e){
+			content = null;
+		}
+		return content;
 	}
 /**
- * 爬取豆瓣250页面电影并下载图片	
+ * 创建文件夹	
+ * @param file
  */
-	public static void Douban250Parser(){
-		String url = "http://movie.douban.com/top250";
-		String source = ParserApi.getHtmlContent(url, "utf-8");
-		ArrayList<String> titles = ParserApi.findall(source, "<img alt=\"(.*?)\" src=\".*?\" class=\"\">");
-		ArrayList<String> imgs = ParserApi.findall(source, "<img alt=\".*?\" src=\"(.*?)\" class=\"\">");
-		ArrayList<String> rating = ParserApi.findall(source, "<span class=\"rating.*?\"><em>(.*?)</em></span>");
-		for(int i=0;i<titles.size();i++){
-			System.out.println(titles.get(i));
-			System.out.println(imgs.get(i));
-			System.out.println(rating.get(i));
+	public static void CreateDirectory(String file){
+		File myfile = new File(file);
+		if(myfile.exists()){
+			System.out.println(file+" 文件夹已存在");
+			return;
 		}
-		ParserApi.SaveFile(imgs, titles,"D:/douban250");		
+		myfile.mkdirs();  //创建文件夹
 	}
+/**
+ * 保存图片  	
+ * @param fileUrl  图片链接
+ * @param fileDes  图片存名
+ */
+	public static void saveUrlFile(String fileUrl,String fileDes) {  
+		try{
+			File toFile = new File(fileDes);    
+	        if (toFile.exists()){   
+	        	System.out.println(fileDes+"已存在");
+	            return;    
+	        }    
+	        toFile.createNewFile();    
+	        FileOutputStream outImgStream = new FileOutputStream(toFile);    
+	        outImgStream.write(getUrlFileData(fileUrl));    
+	        outImgStream.close(); 
+	        System.out.println(fileDes+"保存成功");			
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+        
+    }   
+	
+	public static byte[] getUrlFileData(String fileUrl) throws Exception{
+		URL url = new URL(fileUrl);    
+        HttpURLConnection httpConn = (HttpURLConnection) url.openConnection();    
+        httpConn.connect();    
+        InputStream cin = httpConn.getInputStream();    
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();    
+        byte[] buffer = new byte[1024];    
+        int len = 0;    
+        while ((len = cin.read(buffer)) != -1) {    
+            outStream.write(buffer, 0, len);    
+        }    
+        cin.close();    
+        byte[] fileData = outStream.toByteArray();    
+        outStream.close();    
+        return fileData; 
+	}    
 }
